@@ -1,5 +1,29 @@
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <fcntl.h>
+#include <strings.h>
+
+struct entry {
+	int year;
+	int month;
+	int day;
+	struct *next;
+	char descr[50];
+}
+
+struct new_entry() 
+{
+	struct entry  *new;
+	new = malloc(sizeof(struct entry));
+	if(!new) {
+		fprintf(stderr, "Out of memory\n");
+		exit(1);
+	}
+	return new;
+}
 
 char display_menu()
 {
@@ -25,9 +49,71 @@ char display_menu()
 	return action - '0';
 }
 
+int open_mem_file()
+{
+	const char *homedir = getenv("HOME");
+	char memfile[50];
+	int fd;
+	if(!homedir) 
+		homedir = getpwuid(getuid())->pw_dir;
+	strcpy(memfile, homedir);
+	strcat(memfile, ".doto_file");
+	fd = open(memfile, O_RDWR | O_TRUNC | O_CREAT);
+	if(fd == -1) {
+		perror("memory file");
+		exit(1);
+	}
+	return fd;
+}
+
+void read_nbytes(int fd, void *buf, ssize_t n)
+{
+	ssize_t bts_read = 0;
+	while(n) {
+		bts_read = read(fd, buf + bts_read, n);
+		if(bts_read == -1) {
+			perror("read memory file");
+			exit(1);
+		}
+		n -= bts_read;
+	}
+	return;
+}
+
+struct entry read_entry(int fd)
+{
+	struct entry *n_entry = new_entry();
+	ssize_t read_bts;
+	read_nbytes(fd, &(n_entry->year), sizeof(int));
+	read_nbytes(fd, &(n_entry->month), sizeof(int));
+	read_nbytes(fd, &(n_entry->day), sizeof(int));
+	read_nbytes(fd, &(n_entry->descr), 50*sizeof(char));
+	return n_entry;
+}
+
+struct entry read_all_entries(int fd, int cnt)
+{
+	if(!cnt)
+		return NULL;
+	struct entry *first, **dfirst;
+	int i;
+	first = read_entry(fd);
+	**dfirst = &(first->next);
+	for(i = 0; i < cnt - 1; i++) {
+		*dfirst = read_entry(fd);
+		**dfirst = &((*dfirst)->next)
+	}
+	*dfirst = NULL;
+	return first;
+}
+
 int main()
 {
 	char choice;
+	int fd, entry_cnt;
+	struct entry *entries;
+	read_nbytes(fd, &entry_cnt, sizeof(entry_cnt));
+	entries = read_all_entries(fd, entry_cnt);
 	while(1) {
 		choice = display_menu();
 		switch(choice) {
