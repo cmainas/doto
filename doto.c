@@ -126,15 +126,26 @@ struct entry *read_entry(int fd)
 	return n_entry;
 }
 
-struct entry *read_all_entries(int fd, int cnt)
+struct entry *read_all_entries(int fd, int *cnt)
 {
 	if(!cnt)
 		return NULL;
+	time_t t = time(NULL);
+	struct tm *tm = localtime(&t);
 	struct entry *first, **dfirst;
 	int i;
-	first = read_entry(fd);
+	char ok = 1;
+	while(ok){
+		first = read_entry(fd);
+		if(first->year < tm->tm_year + 1900 || 
+				first->month < tm->tm_mon + 1 ||
+				first->day < tm->tm_mday)
+			(*cnt)--;
+		else 
+			ok = 0;
+	}
 	dfirst = &(first->next);
-	for(i = 0; i < cnt - 1; i++) {
+	for(i = 0; i < *cnt - 1; i++) {
 		*dfirst = read_entry(fd);
 		dfirst = &((*dfirst)->next);
 	}
@@ -357,7 +368,7 @@ int main()
 	struct entry *entries;
 	fd = open_mem_file(O_RDONLY | O_CREAT);
 	read_nbytes(fd, &entry_cnt, sizeof(entry_cnt));
-	entries = read_all_entries(fd, entry_cnt);
+	entries = read_all_entries(fd, &entry_cnt);
 	close_mem_file(fd);
 	printf("bts: %d\n ", entry_cnt);
 	while(1) {
@@ -390,7 +401,7 @@ int main()
 				break;
 			case 6:
 				done(entries);
-				printf("done\n");
+				//printf("done\n");
 				break;
 			default:
 				printf("\n%c is not between 0-6\n", choice+'0');
