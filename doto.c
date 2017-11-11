@@ -148,7 +148,7 @@ void print_today(struct entry *ens)
 	time_t t = time(NULL);
 	struct tm *tm = localtime(&t);
 	int cnt=0;
-	printf("All tasks:\n");
+	printf("Today tasks:\n");
 	printf("-------------------------------------\n"
 		"|id	|Day	|Month	|Year	|Done?	|Description|\n"
 		"-------------------------------------\n");
@@ -167,23 +167,65 @@ void print_today(struct entry *ens)
 	return;
 }
 
+void one_week_from_now(int *y, char *m, char *d)
+{
+	if(*d < 23){
+		*d += 6;
+		return;
+	}
+	if(*m == 4 | *m == 6 | *m == 9 | *m == 11) {
+		if(*d < 25) {
+			*d += 6;
+			return;
+		}
+		*m++;
+		*d = *d - 24;
+		return;
+	} else if (*m == 2) {
+		*m++;
+		*d = *d - 23;
+		return;
+	} else {
+		if(*d < 26) {
+			*d += 6;
+			return;
+		}
+		if(*m == 12){
+			*m = 1;
+			*y++;
+		} else {
+			*m++;
+		}
+		*d = *d - 25;
+	}
+	return;
+}
+
 void print_week(struct entry *ens)
 {
+	int cnt = 0;
 	struct entry *tmp = ens;
 	time_t t = time(NULL);
-	struct tm time = *localtime(&t);
+	struct tm *tm = localtime(&t);
 	printf("For this week you have to:\n");
+	printf("-------------------------------------\n"
+		"|id	|Day	|Month	|Year	|Done?	|Description|\n"
+		"-------------------------------------\n");
+	int yr = tm->tm_year + 1900;
+	char mn = tm->tm_mon + 1, d = tm->tm_mday;
+	one_week_from_now(&yr, &mn, &d);
 	while(tmp) {
-		if(tmp->year > time.tm_year + 1900)
+		if(tmp->year > yr)
 			break;
-		if(tmp->month > time.tm_mon + 1)
+		if(tmp->month > mn)
 			break;
-		if(tmp->day > time.tm_mday)
+		if(tmp->day > d)
 			break;
-		printf("\t %s\n", tmp->descr);
+		printf("|%d\t|%d\t|%d\t|%d\t|%d\t|%s", cnt++, tmp->day, 
+				tmp->month, tmp->year, tmp->done, tmp->descr);
+		printf("-------------------------------------\n");
 		tmp = tmp->next;
 	}
-	printf("---------------------------\n End of tasks for this week\n");
 	return;
 }
 
