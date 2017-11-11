@@ -43,8 +43,8 @@ char display_menu()
 	printf("\t1: Print today stuff \n");
 	printf("\t2: Print week stuff \n");
 	printf("\t3: Print all stuff \n");
-	printf("\t4: Edit a todo\n");
-	printf("\t5: Add a todo\n");
+	printf("\t4: Add a todo\n");
+	printf("\t5: Delete a todo\n");
 	printf("\t6: Mark a todo as done\n");
 	printf("Choose between 0-6: ");
 	action = getchar();
@@ -175,28 +175,28 @@ void one_week_from_now(int *y, char *m, char *d)
 	}
 	if(*m == 4 | *m == 6 | *m == 9 | *m == 11) {
 		if(*d < 25) {
-			*d += 6;
+			(*d) += 6;
 			return;
 		}
-		*m++;
-		*d = *d - 24;
+		(*m)++;
+		(*d) = (*d) - 24;
 		return;
 	} else if (*m == 2) {
-		*m++;
-		*d = *d - 23;
+		(*m)++;
+		(*d) = (*d) - 23;
 		return;
 	} else {
 		if(*d < 26) {
-			*d += 6;
+			(*d) += 6;
 			return;
 		}
 		if(*m == 12){
-			*m = 1;
-			*y++;
+			(*m) = 1;
+			(*y)++;
 		} else {
-			*m++;
+			(*m)++;
 		}
-		*d = *d - 25;
+		(*d) = (*d) - 25;
 	}
 	return;
 }
@@ -212,8 +212,11 @@ void print_week(struct entry *ens)
 		"|id	|Day	|Month	|Year	|Done?	|Description|\n"
 		"-------------------------------------\n");
 	int yr = tm->tm_year + 1900;
-	char mn = tm->tm_mon + 1, d = tm->tm_mday;
-	one_week_from_now(&yr, &mn, &d);
+	char mn = tm->tm_mon + 1, d = tm->tm_mday+14;
+	printf("%d-%d-%d\n", yr, mn, d);
+	//one_week_from_now(&yr, &mn, &d);
+	d += 6;
+	printf("%d-%d-%d\n", yr, mn, d);
 	while(tmp) {
 		if(tmp->year > yr)
 			break;
@@ -318,6 +321,22 @@ void update_mem_file(int cnt, struct entry *ens)
 	return;
 }
 
+void del(struct entry **ens)
+{
+	int i, id;
+	struct entry **tmp = ens, *t = *ens;
+	printf("Add id of entry you want to delete:");
+	scanf("%d", &id);
+	getchar();
+	for(i=0; i<id; i++){
+		tmp = &(t->next);
+		t = t->next;
+	}
+	*tmp = t->next;
+	free(t);
+	return;
+}
+
 int main()
 {
 	char choice;
@@ -348,13 +367,13 @@ int main()
 				//printf("print month\n");
 				break;
 			case 4:
-				//edit();
-				printf("edit\n");
-				break;
-			case 5:
 				entries = add(entries);
 				entry_cnt++;
 				//printf("add\n");
+				break;
+			case 5:
+				del(&entries);
+				entry_cnt--;
 				break;
 			case 6:
 				//done();
