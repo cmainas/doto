@@ -223,17 +223,17 @@ void print_week(struct entry *ens)
 		"|id	|Day	|Month	|Year	|Done?	|Description|\n"
 		"-------------------------------------\n");
 	int yr = tm->tm_year + 1900;
-	char mn = tm->tm_mon + 1, d = tm->tm_mday+14;
+	char mn = tm->tm_mon + 2, d = tm->tm_mday+17;
 	printf("%d-%d-%d\n", yr, mn, d);
-	//one_week_from_now(&yr, &mn, &d);
-	d += 6;
+	one_week_from_now(&yr, &mn, &d);
+	//d += 6;
 	printf("%d-%d-%d\n", yr, mn, d);
 	while(tmp) {
 		if(tmp->year > yr)
 			break;
-		if(tmp->month > mn)
+		if(tmp->month > mn && tmp->year == yr)
 			break;
-		if(tmp->day > d)
+		if((tmp->day > d) && (tmp->month == mn))
 			break;
 		printf("|%d\t|%d\t|%d\t|%d\t|%d\t|%s", cnt++, tmp->day, 
 				tmp->month, tmp->year, tmp->done, tmp->descr);
