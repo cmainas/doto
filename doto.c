@@ -28,12 +28,13 @@ struct entry *new_entry()
 	return new;
 }
 
-char display_menu()
+char display_menu(int ecnt)
 {
 	time_t t = time(NULL);
 	struct tm *tm = localtime(&t);
 	char action = -1;
 	printf("Hello to doto menu\n");
+	printf("Total jobs: %d\n ", ecnt);
 	printf("Today is %s\n", asctime(tm));
 //	printf("Today is: %d-%d-%d %d:%d:%d\n", tm.tm_mday, 
 //			tm.tm_mon++, tm.tm_year + 1900, tm.tm_hour,
@@ -88,7 +89,7 @@ void read_nbytes(int fd, void *buf, ssize_t n)
 				tries -= 3;
 				memcpy(buf, &tries, sizeof(int));
 				//printf("hi---------------\n");
-				break;
+				return;
 			}
 		} else {
 			n -= bts_read;
@@ -128,7 +129,7 @@ struct entry *read_entry(int fd)
 
 struct entry *read_all_entries(int fd, int *cnt)
 {
-	if(!cnt)
+	if(!(*cnt))
 		return NULL;
 	time_t t = time(NULL);
 	struct tm *tm = localtime(&t);
@@ -260,9 +261,9 @@ void print_all(struct entry *ens)
 	return;
 }
 
-struct entry *add(struct entry *ens)
+struct entry *get_entry()
 {
-	struct entry *tmp = ens, **dtmp = &ens, *nentry = new_entry();
+	struct entry *nentry = new_entry();
 	printf("Which year the task ends: ");
 	scanf("%d", &(nentry->year));
 	getchar();
@@ -275,7 +276,12 @@ struct entry *add(struct entry *ens)
 	printf("Add a description (50 chars max): ");
 	fgets(nentry->descr, sizeof(nentry->descr), stdin);
 	nentry->done = 0;
-	//scanf("%s", nentry->descr);
+	return nentry;
+}
+
+struct entry *add(struct entry *ens)
+{
+	struct entry *tmp = ens, **dtmp = &ens, *nentry = get_entry();
 	if(!tmp)
 		return nentry;
 	while(tmp) {
@@ -370,9 +376,8 @@ int main()
 	read_nbytes(fd, &entry_cnt, sizeof(entry_cnt));
 	entries = read_all_entries(fd, &entry_cnt);
 	close_mem_file(fd);
-	printf("bts: %d\n ", entry_cnt);
 	while(1) {
-		choice = display_menu();
+		choice = display_menu(entry_cnt);
 		switch(choice) {
 			case 0 : 
 				printf("bye: %d\n", entry_cnt);
