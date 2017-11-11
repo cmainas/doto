@@ -60,12 +60,13 @@ int open_mem_file()
 		homedir = getpwuid(getuid())->pw_dir;
 	strcpy(memfile, homedir);
 	strcat(memfile, "/.doto_file");
-	fprintf(stderr, "Hi: %s\n", memfile);
-	fd = open(memfile, O_RDWR | O_TRUNC | O_CREAT, 0644);
+	//fprintf(stderr, "Hi: %s\n", memfile);
+	fd = open(memfile, O_RDWR | O_CREAT, 0644);
 	if(fd == -1) {
 		perror("memory file");
 		exit(1);
 	}
+	//printf("fl: %d\n", lseek(fd, 0, SEEK_END));
 	return fd;
 }
 
@@ -80,10 +81,12 @@ void read_nbytes(int fd, void *buf, ssize_t n)
 			exit(1);
 		}
 		if(!bts_read) {
+			//printf("mpou\n");
 			tries++;
 			if(tries == 3) {
 				tries -= 3;
 				memcpy(buf, &tries, sizeof(int));
+				//printf("hi---------------\n");
 				break;
 			}
 		} else {
@@ -97,6 +100,8 @@ void read_nbytes(int fd, void *buf, ssize_t n)
 void write_nbytes(int fd, void *buf, ssize_t n)
 {
 	ssize_t bts_written = 0;
+	//int *k=buf;
+	//printf("brrrrrrrr: %d\n", (int)*k);
 	while(n) {
 		bts_written = write(fd, buf + bts_written, n);
 		if(bts_written == -1) {
@@ -256,12 +261,13 @@ int main()
 	struct entry *entries;
 	fd = open_mem_file();
 	read_nbytes(fd, &entry_cnt, sizeof(entry_cnt));
+	printf("bts: %d\n ", entry_cnt);
 	entries = read_all_entries(fd, entry_cnt);
 	while(1) {
 		choice = display_menu();
 		switch(choice) {
 			case 0 : 
-				printf("bye\n");
+				printf("bye: %d\n", entry_cnt);
 				write_nbytes(fd, &entry_cnt, sizeof(entry_cnt));
 				close_mem_file(entries, fd);
 				return 0;
