@@ -337,6 +337,19 @@ void del(struct entry **ens)
 	return;
 }
 
+void done(struct entry *ens)
+{
+	struct entry *tmp = ens;
+	int i, id;
+	printf("Add id of entry you want to mark as done:");
+	scanf("%d", &id);
+	getchar();
+	for(i=0; i<id; i++)
+		tmp = tmp->next;
+	tmp->done = 1;
+	return;
+}
+
 int main()
 {
 	char choice;
@@ -376,7 +389,7 @@ int main()
 				entry_cnt--;
 				break;
 			case 6:
-				//done();
+				done(entries);
 				printf("done\n");
 				break;
 			default:
