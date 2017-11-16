@@ -1,4 +1,4 @@
-#Doto 
+# Doto 
 
 Doto is a simple cli todo calendar.
 
